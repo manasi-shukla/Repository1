@@ -1,0 +1,291 @@
+---
+title: "Revisiting the visualizations from The Economist"
+
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+Source :https://medium.economist.com/mistakes-weve-drawn-a-few-8cdd8a42d368"
+
+
+### *1. FACEBOOK*
+
+```{r pressure, echo=FALSE, fig.height=3, fig.width=6, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(scales)
+library(forcats)
+facebook <- read_csv('Economist_corbyn.csv')
+names(facebook) <- c("page","avglike")
+facebook %>%
+  ggplot(aes(x=fct_reorder(page,avglike),y=avglike))+
+  geom_bar(stat = 'identity', fill = 'red') + 
+  labs(x= NULL, y= NULL, title= 'Left-Click',
+  subtitle= "Average number of likes per Facebook post\n2016, '000",
+  caption = 'Source: Facebook')+
+  scale_y_continuous(labels = unit_format(scale = 1e-3, unit = ''),
+                     breaks = seq(0, 6000, 1000),
+                     limits = c(0, 6000)) +
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.05),
+        axis.text.x = element_text(hjust = 0.5))+
+  coord_flip()
+```
+
+### *2. DOGS MEASUREMENTS*
+## **Fit as a Butcher's Dog**
+*Characterstics of dogs registered with the UK's Kennel Club,Average when fully grown*
+
+```{r pressure2, echo=FALSE, fig.height=3, fig.width=3, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(scales)
+dogs <- read_csv('Economist_dogs.csv')
+names(dogs) <- c("year","wght","neck")
+Plot1 <-dogs %>%
+  ggplot(aes(x=year,y=wght))+
+  geom_line(colour = 'red',size=1.3 ) + 
+  labs(x= NULL, y= NULL, title= "Weight* (in kg)",
+       caption = '*Where atleast 50 are registered per year')+
+  scale_x_continuous(breaks = seq(2006, 2015, 3),
+                     limits = c(2006, 2015)) +
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.05),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=14, face="bold.italic"),
+        axis.text.x = element_text(hjust = 0.5))
+Plot1
+Plot2 <-dogs %>%
+  ggplot(aes(x=year,y=neck))+
+  geom_line(colour = 'red',size=1.3 ) + 
+  labs(x= NULL, y= NULL, title= "Neck Size** (in cm)",
+       caption = '**Where atleast 100 are registered per year')+
+  scale_x_continuous(breaks = seq(2006, 2015, 3),
+                     limits = c(2006, 2015)) +
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.05),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=14, face="bold.italic"),
+        axis.text.x = element_text(hjust = 0.5))
+Plot2
+```
+
+
+Sources: Kennel Club;The Economist    
+
+### *3. OPINION ON BREXIT *
+```{r pressure3, echo=FALSE, fig.height=6, fig.width=6, message=FALSE, warning=FALSE}
+brexit <- read_csv('Economist_brexit.csv')
+names(brexit) <- c("date","right","wrong")
+brexit1 <- brexit %>%
+  gather(vote,percent,right:wrong)
+plot3 <-brexit1 %>%
+  ggplot(aes(x=date,y=percent,colour=vote))+
+  geom_point(stat='identity', position='identity') +
+  geom_smooth(se=FALSE) +
+  scale_colour_brewer(type = 'qual', palette = 6, direction =-1)+
+  labs(x= NULL, y= "% responding", title= 'Bremorse',
+       subtitle= "In hindsight, Do you think Britain was right or wrong to leave the EU?",
+       caption = 'Source:NatCen Social Research')+
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.05),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=12, face="bold"),
+        axis.text.x = element_text(hjust = 0.5), 
+        legend.title = element_blank(),
+        legend.position = "top",
+        legend.background = element_rect(fill = '#ffef99'),
+        legend.key.size=unit(0.04, "cm"))
+plot3
+```
+
+### 4. *TRADE DEFICIT AND MANUFACTURING EMPLOYMENT *
+## **Free Markets and Free Workers**
+*United States*
+
+```{r pressure4, echo=FALSE, fig.height=3, fig.width=3, message=FALSE, warning=FALSE}
+trade <- read_csv('Economist_us-trade-manufacturing.csv')
+names(trade) <- c("year","deficit","empl")
+trade <- trade %>%
+drop_na()
+trade$year <- as.numeric(trade$year)
+plot4a <-trade %>%
+  ggplot(aes(x=year,y=deficit))+
+  geom_bar(stat='identity', position='identity',fill='red') +
+  geom_smooth(se=FALSE) +
+  labs(x= NULL, y=NULL, title= "Trade Deficit with China in goods \n$bn")+
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.05),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=12, face="bold"),
+        axis.text.x =element_text(angle=45))
+plot4a
+plot4b <-trade %>%
+  ggplot(aes(x=year,y=empl))+
+  geom_bar(stat='identity', position='identity', fill='red') +
+  geom_smooth(se=FALSE) +
+  labs(x= NULL, y=NULL, title= "Manufacturing Employment \nm")+
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.05),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=12, face="bold"),
+        axis.text.x =element_text(angle=45))
+plot4b
+```
+
+
+Sources: US Census Bureau, BLS 
+
+### 5. *POPULATION OVER 65 AND GOVERNMENT SPENDING ON PENSION BENEFITS*
+
+```{r pressure5, echo=FALSE, fig.height=6, fig.width=6, message=FALSE, warning=FALSE}
+library(ggrepel)
+pensions <- read_csv('Economist_pensions.csv')
+names(pensions) <- c("country","population","spending")
+pensions <- pensions %>%
+drop_na()
+
+oecd <-subset(pensions,country %in% c("Brazil","Japan","Italy","Turkey","Mexico","China","United States"
+                                      ,"Greece", "South Korea", "Poland"))
+newentry<- data.frame(country="OECD average", population=mean(oecd$population), spending=mean(oecd$spending))
+pensions <- rbind(pensions, newentry)
+oecd <- rbind(oecd, newentry)
+plot5 <-pensions %>%
+  ggplot(aes(x=population, y=spending, label=country))+
+  geom_point(colour=ifelse(pensions$country %in% oecd$country, 'red','#ec7063'), size=3)+
+  geom_text_repel(data = oecd, fontface=ifelse(oecd$country=="Brazil","bold","plain"))+
+  labs(x= "Population aged 65 years and over, % of total", y="Government Spending on pension\nbenefits- % of total GDP", 
+       title= "Brazil's Golden Oldie Blowout", subtitle = "Latest available",caption = "Sources: OECD, WorldBank, Previdencia Social")+
+  theme(plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.1),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=12, face="bold"),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.caption = element_text(colour="#434343", size=8))
+
+plot5
+```
+
+
+### SURFEIT OF SURPLUSES
+```{r pressure6, echo=FALSE, fig.height=3, fig.width=3, message=FALSE, warning=FALSE}
+balance <- read_csv('Economist_eu-balance_tidy.csv')
+balance <- balance %>%
+drop_na() 
+balance_filter<- balance %>%
+filter(measure =="Budget balance, euro million") %>%
+select(country,year,value)
+Current_filter<- balance %>%
+  filter(measure =="Current-account balance, euro million") %>%
+  select(country,year,value)
+balance_others<-balance_filter %>%
+  filter(country %in% c("Austria","Belgium","Italy","Ireland","France", "Portugal"))%>%
+  select(year,value)%>%
+  group_by(year) %>%
+  summarise(value=sum(value))%>%
+  mutate(country="Others")
+Current_others<-Current_filter %>%
+  filter(country %in% c("Austria","Belgium","Italy","Ireland","France", "Portugal"))%>%
+  select(year,value)%>%
+  group_by(year) %>%
+  summarise(value=sum(value))%>%
+  mutate(country="Others")
+Major_balance<-subset(balance_filter,country %in% c("Germany","Netherlands","Greece","Spain"))
+balance_final <- rbind(Major_balance, balance_others)
+Major_current<-subset(Current_filter,country %in% c("Germany","Netherlands","Greece","Spain"))
+current_final <- rbind(Major_current, Current_others)
+
+plot6a <-balance_final %>%
+  ggplot(aes(x=year, y=value, colour=country))+
+  geom_bar(stat = 'identity', aes(fill=country))+
+  scale_colour_brewer(type = 'qual', palette = 4)+
+  labs(x= NULL, y= NULL,title= "Surfeit of Surpluses\nSelected Euro area countries $bn",
+       subtitle= "Budget Balances",caption = "Sources: Eurostats, National Statistics")+
+  theme(legend.position="bottom", legend.box = "horizontal",
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = '#ffef99'),
+        legend.key.size=unit(0.2, "cm"),
+        plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.1),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=11, face="bold"),
+        plot.caption = element_text(colour="#434343", size=8))+
+         scale_y_continuous(labels = unit_format(scale = 1e-3, unit = ''),
+                     breaks = seq(-600000, 10000, 100000),
+                     limits = c(-600000, 40000))+
+          scale_x_continuous(breaks = seq(2009, 2015, 1))+
+          scale_colour_brewer(type = 'qual', palette = 3)
+
+plot6a
+
+plot6b <-current_final %>%
+  ggplot(aes(x=year, y=value, colour=country))+
+  geom_bar(stat = 'identity', aes(fill=country))+
+  scale_colour_brewer(type = 'qual', palette = 4)+
+  labs(x= NULL, y= NULL,title= "Surfeit of Surpluses\nSelected Euro area countries $bn",
+       subtitle= "Current Account Balances",caption = "Sources: Eurostats, National Statistics")+
+  theme(legend.title = element_blank(),
+        legend.position="bottom", legend.box = "horizontal",
+        legend.background = element_rect(fill = '#ffef99'),
+        legend.key.size=unit(0.2, "cm"),
+        plot.background = element_rect(fill = '#ffef99'),
+        panel.background = element_rect(fill = '#ffd966'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_line(colour = 'grey25', size=0.1),
+        panel.grid.major.y = element_line(colour = 'grey25',size=0.05),
+        plot.title = element_text(size=11, face="bold"),
+        plot.caption = element_text(colour="#434343", size=8))+
+        scale_y_continuous(labels = unit_format(scale = 1e-3, unit = ''),
+                     breaks = seq(-150000, 400000, 100000),
+                     limits = c(-150000, 400000))+
+         scale_x_continuous(breaks = seq(2009, 2015, 1))+
+         scale_colour_brewer(type = 'qual', palette = 3)
+
+plot6b
+```
+
+###CHART COMMENTS
+
+**Average No. of likes per Facebook post**
+•	Improper Scale : Not encouraging the eye to compare different pieces of data
+•	Unnecessary variance in bar chart colours
+•	Background and white lined grids could be given more subtle colour to emphasize more on the bar graph
+
+**Dog’s measurement**
+•	Using Dual Scales on a single plot area is not a good idea
+•	Background could be given more subtle colour to emphasize more on the bar graph
+
+**Opinion on Brexit**
+•	Using line chart not recommended here as it should be a scatter plot. (the poll data is not continuous)
+•	Further, a smoothened line may be drawn to reveal the data at several levels of detail, from a broad overview to the fine structure
+
+**Free Markets & free Workers** 
+•	Again, Using Dual Scales on a single plot area is not a good idea
+•	Particularly wrong in this case, where y axis of one plot is in negative range, and for the other in positive range
+
+**Population Over 65 and Government Spending on Benefits**
+•	Inappropriate variance in country colours. While, to keep graph area clean, only a selected ones have been labelled and contrasted against Brazil, the dual variation in colour tone is a misrepresentation.
+•	The ‘latest available’ could be better labelled by the year of data source
+
+**Surfeit of Surpluses**	
+•	Very difficult to comprehend due to a number of small categories, many of which are not easy to distinguish because of small value and colour similarities
+
+

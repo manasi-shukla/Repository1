@@ -1,0 +1,263 @@
+---
+title: "Multiple Regression Assignment"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+### Fama-French Factor Model
+#### _*Submitted by*_: Manasi Shukla
+#### _*Company Choosen*_ : IBM
+
+1. Model trained using 20 years of Historical Data
+
+```{r 20yearsmodel1, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+model<-read_csv("F-F_Research_Data_5_Factors_2x3_daily.CSV",skip=3)
+names(model) <- c("x","MktminusRF","SMB","HML","RMW","CMA","RF", "Date")
+model <- model %>%
+  mutate(Date= dmy(Date))
+IBM <- read_csv('IBM.csv') %>%
+  select(Date, `Adj Close`) %>%
+  mutate(returns = log(`Adj Close`) - log(lag(`Adj Close`))) 
+combined<-left_join(IBM,model, by="Date") 
+combined <- combined %>%
+  drop_na() %>%
+  mutate(Actual=returns-RF)%>%
+  filter(Actual!=0)%>%
+  select (-x,-CMA, -`Adj Close`,-RMW, -returns, -RF)
+
+combined_train20 <- combined %>%
+  filter (Date <	"2019-01-01")
+combined_test20 <- combined %>%
+  filter (Date >=	"2019-01-01")
+lm20 <-lm(formula = Actual ~ MktminusRF + SMB + HML , data = combined_train20)
+summary(lm20)
+```
+Observations from the above results : 
+1. All the p-values are statistically significant for a typical value of alpha= 1 %  
+
+2. All the t-values are outside +/- 2 range, hence statistically significant.
+
+3. The model is able to explain only about 35 % of variance in the output.
+
+
+```{r 20yearsmodel2, echo=FALSE, message=FALSE, warning=FALSE}
+combined_train20  <- combined_train20  %>%
+  mutate(Predicted = predict(lm20, combined_train20)) %>%
+  mutate(AbsPctError = abs((Actual-Predicted)/(Actual)), 
+         SquaredError = (Actual-Predicted)^2)
+modelPerformance <- tibble(modelName = "20 years data",
+                           dataType = 'train',
+                           MAPE = mean((combined_train20$AbsPctError),infinite.rm=TRUE),
+                           MSE = mean(combined_train20$SquaredError))
+
+plt_20train <- combined_train20 %>%
+  select(Date,Actual, Predicted) %>%
+  gather(key ='variable', value = 'value', -Date) %>%
+  ggplot(aes(x = Date, y= value,colour = variable, shape = variable)) +
+  geom_line() +
+  labs(title = 'Actual and Model Results',
+       subtitle = '20 years data based model-training data',
+       x="")+
+  ylab(expression(R[it]~-RF[t]))+
+  theme(legend.position="bottom",legend.title = element_blank())
+print(plt_20train)
+```
+
+
+```{r 20yearsmodel3, echo=FALSE, message=FALSE, warning=FALSE}
+combined_test20  <- combined_test20  %>%
+  mutate(Predicted = predict(lm20, combined_test20)) %>%
+  mutate(AbsPctError = abs((Actual-Predicted)/(Actual)), 
+         SquaredError = (Actual-Predicted)^2)
+modelPerformance <- modelPerformance %>%
+rbind(tibble(modelName = "20 years data",
+                           dataType = 'test',
+                           MAPE = mean((combined_test20$AbsPctError),infinite.rm=TRUE),
+                           MSE = mean(combined_test20$SquaredError)))
+
+plt_20test <- combined_test20 %>%
+  select(Date,Actual, Predicted) %>%
+  gather(key ='variable', value = 'value', -Date) %>%
+  ggplot(aes(x = Date, y= value,colour = variable, shape = variable)) +
+  geom_line() +
+  labs(title = 'Actual and Model Results',
+       subtitle = '20 years data based model-test data',
+       x="")+
+  ylab(expression(R[it]~-RF[t]))+
+  theme(legend.position="bottom",legend.title = element_blank())
+print(plt_20test)
+```
+
+Model Performance:
+```{r 20yearsmodel4, echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+modelPerformance %>%
+  kable(digits = 4, 
+        format.args = list(big.mark = ','),
+        scientific = FALSE) %>%
+  writeLines()
+```
+
+2. Model trained using 10 years of Historical Data
+
+```{r 10yearsmodel1, echo=FALSE, message=FALSE, warning=FALSE}
+combined_train10 <- combined %>%
+filter(Date >="2009-01-01" & Date <= "2018-12-31")
+combined_test10 <- combined %>%
+  filter (Date >=	"2019-01-01")
+lm10 <-lm(formula = Actual ~ MktminusRF + SMB + HML , data = combined_train10)
+summary(lm10)
+```
+Observations from the above results : 
+1. All the p-values are statistically significant for a typical value of alpha= 1 %  
+
+2. All the t-values are outside +/- 2 range, hence statistically significant.
+
+3. The model is able to explain only about 41 % of variance in the output.
+
+```{r 10yearsmodel2, echo=FALSE, message=FALSE, warning=FALSE}
+combined_train10  <- combined_train10  %>%
+  mutate(Predicted = predict(lm10, combined_train10)) %>%
+  mutate(AbsPctError = abs((Actual-Predicted)/(Actual)), 
+         SquaredError = (Actual-Predicted)^2)
+modelPerformance <- modelPerformance %>%
+  rbind(tibble(modelName = "10 years data",
+                           dataType = 'train',
+                           MAPE = mean((combined_train10$AbsPctError),infinite.rm=TRUE),
+                           MSE = mean(combined_train10$SquaredError)))
+
+plt_10train <- combined_train10 %>%
+  select(Date,Actual, Predicted) %>%
+  gather(key ='variable', value = 'value', -Date) %>%
+  ggplot(aes(x = Date, y= value,colour = variable, shape = variable)) +
+  geom_line() +
+  labs(title = 'Actual and Model Results',
+       subtitle = '10 years data based model-training data',
+       x="")+
+  ylab(expression(R[it]~-RF[t]))+
+  theme(legend.position="bottom",legend.title = element_blank())
+print(plt_10train)
+```
+
+
+```{r 10yearsmodel3, echo=FALSE, message=FALSE, warning=FALSE}
+combined_test10  <- combined_test10  %>%
+  mutate(Predicted = predict(lm10, combined_test10)) %>%
+  mutate(AbsPctError = abs((Actual-Predicted)/(Actual)), 
+         SquaredError = (Actual-Predicted)^2)
+modelPerformance <- modelPerformance %>%
+rbind(tibble(modelName = "10 years data",
+                           dataType = 'test',
+                           MAPE = mean((combined_test10$AbsPctError),infinite.rm=TRUE),
+                           MSE = mean(combined_test10$SquaredError)))
+
+plt_10test <- combined_test10 %>%
+  select(Date,Actual, Predicted) %>%
+  gather(key ='variable', value = 'value', -Date) %>%
+  ggplot(aes(x = Date, y= value,colour = variable, shape = variable)) +
+  geom_line() +
+  labs(title = 'Actual and Model Results',
+       subtitle = '10 years data based model-test data',
+       x="")+
+  ylab(expression(R[it]~-RF[t]))+
+  theme(legend.position="bottom",legend.title = element_blank())
+print(plt_10test)
+```
+Model Performance:
+```{r 10yearsmodel4, echo=FALSE, message=FALSE, warning=FALSE}
+modelPerformance %>%
+  kable(digits = 4, 
+        format.args = list(big.mark = ','),
+        scientific = FALSE) %>%
+  writeLines()
+```
+
+
+
+
+3. Model trained using 5 years of Historical Data
+
+```{r 5yearsmodel1, echo=FALSE, message=FALSE, warning=FALSE}
+combined_train5 <- combined %>%
+filter(Date >="2014-01-01" & Date <= "2018-12-31")
+combined_test5 <- combined %>%
+  filter (Date >=	"2019-01-01")
+lm5<-lm(formula = Actual ~ MktminusRF + SMB + HML , data = combined_train5)
+summary(lm5)
+```
+Observations from the above results : 
+1. All the p-values are statistically significant for a typical value of alpha= 1 %  
+
+2. All the t-values are outside +/- 2 range, hence statistically significant.
+
+3. The model is able to explain only about 35 % of variance in the output.
+
+```{r 5yearsmodel2, echo=FALSE, message=FALSE, warning=FALSE}
+combined_train5  <- combined_train5  %>%
+  mutate(Predicted = predict(lm5, combined_train5)) %>%
+  mutate(AbsPctError = abs((Actual-Predicted)/(Actual)), 
+         SquaredError = (Actual-Predicted)^2)
+modelPerformance <- modelPerformance %>%
+  rbind(tibble(modelName = "5 years data",
+                           dataType = 'train',
+                           MAPE = mean((combined_train5$AbsPctError),infinite.rm=TRUE),
+                           MSE = mean(combined_train5$SquaredError)))
+
+plt_5train <- combined_train5 %>%
+  select(Date,Actual, Predicted) %>%
+  gather(key ='variable', value = 'value', -Date) %>%
+  ggplot(aes(x = Date, y= value,colour = variable, shape = variable)) +
+  geom_line() +
+  labs(title = 'Actual and Model Results',
+       subtitle = '5 years data based model-training data',
+       x="")+
+  ylab(expression(R[it]~-RF[t]))+
+  theme(legend.position="bottom",legend.title = element_blank())
+print(plt_5train)
+```
+
+
+```{r 5yearsmodel3, echo=FALSE, message=FALSE, warning=FALSE}
+combined_test5  <- combined_test5  %>%
+  mutate(Predicted = predict(lm5, combined_test5)) %>%
+  mutate(AbsPctError = abs((Actual-Predicted)/(Actual)), 
+         SquaredError = (Actual-Predicted)^2)
+modelPerformance <- modelPerformance %>%
+rbind(tibble(modelName = "5 years data",
+                           dataType = 'test',
+                           MAPE = mean((combined_test5$AbsPctError),infinite.rm=TRUE),
+                           MSE = mean(combined_test5$SquaredError)))
+
+plt_5test <- combined_test5 %>%
+  select(Date,Actual, Predicted) %>%
+  gather(key ='variable', value = 'value', -Date) %>%
+  ggplot(aes(x = Date, y= value,colour = variable, shape = variable)) +
+  geom_line() +
+  labs(title = 'Actual and Model Results',
+       subtitle = '5 years data based model-test data',
+       x="")+
+  ylab(expression(R[it]~-RF[t]))+
+  theme(legend.position="bottom",legend.title = element_blank())
+print(plt_5test)
+```
+Model Performance:
+
+
+```{r 15yearsmodel4, echo=FALSE, message=FALSE, warning=FALSE}
+modelPerformance %>%
+  kable(digits = 4, 
+        format.args = list(big.mark = ','),
+        scientific = FALSE) %>%
+  writeLines()
+```
+
+Recommendation:
+I would recommend going for 5 years based model, as it produces least error  (MAPE) on the test data.
+My selection basis is on predictive performance as I am choosing MAPE as the Criterion. I donot belive any of these would be a good fit for explanatory model, as R squared value for all these are significantly less than 100 %.
+
+
